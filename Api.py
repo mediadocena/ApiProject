@@ -55,7 +55,8 @@ def user():
         #DODEL
         pass    
     else:
-        return 'NOT_FOUND : 404'
+        return '{"status":404 ,"error":"Method Not Found"}'
+#LOGIN
 @app.route('/login' ,methods=['POST'])
 def login():
     username = request.form['username']
@@ -63,14 +64,14 @@ def login():
     password = hashing.hash_value(password, salt ='abcd')
     h = User().findLogin(username,password)
     if h == False:
-        return 'LOGIN FAILED'
+        return '{"status":404 ,"error":"User-Password pair not found"}'
     else: 
         for pas in h:
             h = pas['password']
         if password == h:
-            return 'LOGIN!'
+            return '{"status":200}'
         else:
-            return 'LOGIN FAILED'
+            return '{"status":404 ,"error":"Invalid Login"}'
 #Run app
 if __name__ == '__main__':
     app.run(debug=True)
