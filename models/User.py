@@ -1,7 +1,9 @@
 from pymongo import *
 from const import Const
-class User():
-    def __init__(self,nam,passwor,mai,role):
+from flask import jsonify
+from bson.json_util import loads, dumps
+class User:
+    def __init__(self, nam='', passwor='', mai='', role=''):
         #Conexión a mongodb
         client = MongoClient(Const.URL)
         db = client.Project
@@ -10,9 +12,7 @@ class User():
         self.password = passwor
         self.mail = mai
         self.rol = role
-
-    def __init__(self):
-        pass
+    
 
     def saveToDB(self):
         good = True
@@ -32,3 +32,20 @@ class User():
         except:
             return '400'
         return sel
+    def findLogin(self, username, password):
+        try:
+            sel = list(self.conn.find({'name':username,'password':password}))
+            print('AAAAAAAA',sel)
+            if sel == []:
+                return False
+            else:
+                return sel
+        except:
+            return '500'
+    def getAll(self):
+        res = None
+        try:
+            res = list(self.conn.find({}))
+        except:
+            return '500'
+        return dumps(res)
