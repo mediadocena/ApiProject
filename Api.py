@@ -8,14 +8,7 @@ hashing = Hashing(app)
 def page_not_found(error):
     return render_template('page_not_found.html'), 404
 
-#Endpoints and Methods
-"""
-@app.route("/")
-def redirect():
-    return main()
-@app.route("/prueba")
-def prueba():
-    return '<h1>Prueba</h1>'
+
 @app.route('/Main')
 def main():
     nam = [{
@@ -32,6 +25,14 @@ def main():
     },
     ]
     return render_template('MainTemplate.html', name=nam)
+#Endpoints and Methods
+"""
+@app.route("/")
+def redirect():
+    return main()
+@app.route("/prueba")
+def prueba():
+    return '<h1>Prueba</h1>'
 """
 #Usuarios
 @app.route('/user' ,methods=['POST','GET','PUT','DELETE'])
@@ -72,6 +73,21 @@ def login():
             return '{"status":200}'
         else:
             return '{"status":404 ,"error":"Invalid Login"}'
+@app.route('/upload', methods=['POST'])
+def Upload():
+    if request.method == 'POST':
+        #try:
+            f = request.files['file']
+            name = request.form['name']
+            f.save('ApiProject/public/files/' + f.filename)
+        #except:
+         #   return '{"status" : 500 , "error":"Upload error"}'
+    return '{"status":200}'
+@app.route('/download/<name>',methods=['GET'])
+def download(name):
+    if request.method == 'GET':
+        print(escape(name))
+        return send_file('public/files/'+escape(name), mimetype='image')
 #Run app
 if __name__ == '__main__':
     app.run(debug=True)
