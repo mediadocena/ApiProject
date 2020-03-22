@@ -76,13 +76,20 @@ def login():
 @app.route('/upload', methods=['POST'])
 def Upload():
     if request.method == 'POST':
-        #try:
+        try:
             f = request.files['file']
             name = request.form['name']
-            f.save('ApiProject/public/files/' + f.filename)
-        #except:
-         #   return '{"status" : 500 , "error":"Upload error"}'
+            if '.png' in f.filename:
+                ext = '.png'
+            elif '.jpg' in f.filename:
+                ext = '.jpg'
+            elif '.jpeg' in f.filename:
+                ext = '.jpeg'  
+            f.save('ApiProject/public/files/' + name+ext)
+        except:
+            return '{"status" : 500 , "error":"Upload error"}'
     return '{"status":200}'
+    
 @app.route('/download/<name>',methods=['GET'])
 def download(name):
     if request.method == 'GET':
