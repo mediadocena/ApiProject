@@ -1,6 +1,7 @@
 from flask import *
 from models.User import User
 from flask_hashing import Hashing
+from bson.json_util import loads, dumps
 app = Flask(__name__)
 hashing = Hashing(app)
 #Error Handler
@@ -49,8 +50,11 @@ def user():
         return res
     #PUT
     elif request.method == 'PUT':
-        #DOPUT
-        pass
+        data = request.form['user']
+        user = User()
+        res = user.Update(data)
+        return res
+    
     #DELETE
     elif request.method == 'DELETE':
         #DODEL
@@ -60,17 +64,17 @@ def user():
 #LOGIN
 @app.route('/login' ,methods=['POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    username = request.json['mail']
+    password = request.json['password']
     password = hashing.hash_value(password, salt ='abcd')
     h = User().findLogin(username,password)
     if h == False:
         return '{"status":404 ,"error":"User-Password pair not found"}'
     else: 
         for pas in h:
-            h = pas['password']
-        if password == h:
-            return '{"status":200}'
+            p = pas['password']
+        if password == p:
+            return dumps(h)
         else:
             return '{"status":404 ,"error":"Invalid Login"}'
 @app.route('/upload', methods=['POST'])
@@ -96,5 +100,11 @@ def download(name):
         print(escape(name))
         return send_file('public/files/'+escape(name), mimetype='image')
 #Run app
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
 if __name__ == '__main__':
     app.run(debug=True)
