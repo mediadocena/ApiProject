@@ -9,7 +9,7 @@ from flask_jwt_extended import (
 from datetime import datetime  
 from datetime import timedelta 
 from ast import literal_eval 
-
+import sys
 app = Flask(__name__)
 hashing = Hashing(app)
 # Setup the Flask-JWT-Extended extension
@@ -122,9 +122,14 @@ def Upload():
             elif '.jpg' in f.filename:
                 ext = '.jpg'
             elif '.jpeg' in f.filename:
-                ext = '.jpeg'  
-            f.save('ApiProject/public/files/' + name+ext)
+                ext = '.jpeg'
+            elif '.mp3' in f.filename:
+                ext = '.mp3'  
+            print(name+ext)
+            f.save('./public/files/' + name+ext)
         except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
             return '{"status" : 500 , "error":"Upload error"}'
     return '{"status":200}'
     
