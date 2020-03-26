@@ -3,6 +3,7 @@ from const import Const
 from flask import jsonify
 from bson.json_util import loads, dumps
 from models import Post
+from bson.objectid import ObjectId
 import sys
 class User:
     #Class constructor
@@ -64,9 +65,13 @@ class User:
             return '500'
         return '200' 
 
-    def Delete(iden):
+    def Delete(self,iden):
         try:
-            res = self.conn.delete_one({'_id':ident})
+            res = self.conn.delete_one({'_id':ObjectId(iden)})
+            print(res)
+            print(iden)
         except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
             return '500'
         return '200'

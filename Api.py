@@ -47,9 +47,10 @@ def prueba():
     return '<h1>Prueba</h1>'
 """
 #Usuarios
-@app.route('/user' ,methods=['POST','GET','PUT','DELETE'])
+@app.route('/user' ,methods=['POST','GET','PUT'])
+@app.route('/user/<ident>',methods=['DELETE'])
 @jwt_required
-def user():
+def user(ident=''):
     current_user = get_jwt_identity()
     if current_user is None:
         return jsonify({"msg": "Missing token"}), 400
@@ -72,7 +73,7 @@ def user():
     #DELETE
     elif request.method == 'DELETE':
         user = User()
-        res = user.Delete(request.json['id'])
+        res = user.Delete(escape(ident))
         return res
     else:
         return '{"status":404 ,"error":"Method Not Found"}'
