@@ -3,6 +3,7 @@ from const import Const
 from flask import jsonify
 from bson.json_util import loads, dumps
 from models import Post
+import sys
 class User:
     #Class constructor
     def __init__(self, nam='', passwor='', mai='', role='',post=[]):
@@ -30,26 +31,28 @@ class User:
     def getByIdFromDB(self,iden):
         sel = None
         try:
-            sel = self.conn.select.find_one({'_id':iden})
+            sel = self.conn.select.find_one({'_id':iden},{'password':0})
         except:
             return '500'
         return sel
     #Login Mehtod
-    def findLogin(self, username, password):
+    def findLogin(self, mail,password):
         try:
-            sel = list(self.conn.find({'name':username,'password':password}))
+            sel = self.conn.find_one({'mail':mail,'password':password},{'password':0})
             print('Login Data:',sel)
             if sel == []:
                 return False
             else:
-                return sel
+                return dumps(sel)
         except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
             return '500'
     #Get all users
     def getAll(self):
         res = None
         try:
-            res = list(self.conn.find({}))
+            res = list(self.conn.find({},{'password':0}))
         except:
             return '500'
         return dumps(res)
@@ -60,3 +63,10 @@ class User:
         except:
             return '500'
         return '200' 
+
+    def Delete(iden):
+        try:
+            res = self.conn.delete_one({'_id':ident})
+        except:
+            return '500'
+        return '200'
