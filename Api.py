@@ -9,13 +9,23 @@ from flask_jwt_extended import (
 from datetime import datetime  
 from datetime import timedelta 
 from ast import literal_eval 
+from flask_mail import *
 import sys
+
 app = Flask(__name__)
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME='proyectofinalmail@gmail.com',
+    MAIL_PASSWORD='tujbjlnapolrwqad'
+)
 hashing = Hashing(app)
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = 'jwtls132526nbcs44465873nasl'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 864000
 jwt = JWTManager(app)
+
 #Error Handler
 @app.errorhandler(404)
 def page_not_found(error):
@@ -23,20 +33,7 @@ def page_not_found(error):
 
 @app.route('/Main')
 def main():
-    nam = [{
-        'number':1,
-        'name':'Nombre1',
-        'age':24,
-        'city':'Sevilla'
-    },
-    {
-        'number':2,
-        'name':'Nombre2',
-        'age':22,
-        'city':'Sevilla'
-    },
-    ]
-    return render_template('MainTemplate.html', name=nam)
+    return render_template('MainTemplate.html')
 #Endpoints and Methods
 """
 @app.route("/")
@@ -56,8 +53,14 @@ def user(ident=''):
         return jsonify({"msg": "Missing token"}), 400
     #POST
     if request.method == 'POST':
-        password = hashing.hash_value(request.form['password'], salt='abcd')
-        user = User(request.form['username'],password,request.form['mail'],request.form['rol'])
+        mail = Mail(app)
+        mai = request.json['mail']
+        password = hashing.hash_value(request.json['password'], salt='abcd')
+        user = User(request.json['username'],password,mai,request.json['rol'])
+        msg = Message("Hello",
+                  sender='proyectofinalmail@gmail.com',
+                  recipients=["mediadocena13@gmail.com"])#CORREO DE PRUEBA CAMBIAR POR VARIABLE MAIL
+        mail.send(msg)
         return 'Response: '+ user.saveToDB()
     #GET
     elif request.method == 'GET':
@@ -66,9 +69,13 @@ def user(ident=''):
         return res
     #PUT
     elif request.method == 'PUT':
-        data = request.form['user']
+        name = request.json['name']
+        password = request.json['password']
+        mail = request.json['mail']
+        rol = request.json['rol']
+        iden = request.json['_id']
         user = User()
-        res = user.Update(data)
+        res = user.Update(iden,name,password,mail,rol)
         return res
     #DELETE
     elif request.method == 'DELETE':

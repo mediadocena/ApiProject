@@ -2,12 +2,12 @@ from pymongo import *
 from const import Const
 from flask import jsonify
 from bson.json_util import loads, dumps
-from models import Post
 from bson.objectid import ObjectId
+
 import sys
 class User:
     #Class constructor
-    def __init__(self, nam='', passwor='', mai='', role='',post=[]):
+    def __init__(self, nam='', passwor='', mai='', role=''):
         #Conexión a mongodb
         client = MongoClient(Const.URL)
         db = client.Project
@@ -16,12 +16,11 @@ class User:
         self.password = passwor
         self.mail = mai
         self.rol = role
-        self.post = post
     #Insert a new User to Mongo
     def saveToDB(self):
         good = True
         try:
-            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,'rol':self.rol,'post':self.post})
+            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,'rol':self.rol})
         except:
             good = False
         if good:
@@ -58,10 +57,12 @@ class User:
             return '500'
         return dumps(res)
     #Update user
-    def Update(self,user):
+    def Update(self,iden,name,password,mail,rol):
         try:
-            res = self.conn.update_one({'_id':user['_id']},{{'name':user['name'],'password':user['password'],'mail':user['mail'],'rol':user['rol'],'post':user['post']}})
+            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,'mail':mail,'rol':rol}})
         except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
             return '500'
         return '200' 
 
