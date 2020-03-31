@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import sys
 class User:
     #Class constructor
-    def __init__(self, nam='', passwor='', mai='', role=''):
+    def __init__(self, nam='', passwor='', mai='', role='',icon=''):
         #Conexión a mongodb
         client = MongoClient(Const.URL)
         db = client.Project
@@ -16,11 +16,12 @@ class User:
         self.password = passwor
         self.mail = mai
         self.rol = role
+        self.icon = icon
     #Insert a new User to Mongo
     def saveToDB(self):
         good = True
         try:
-            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,'rol':self.rol})
+            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,'rol':self.rol,'icon':self.icon})
         except:
             good = False
         if good:
@@ -57,9 +58,9 @@ class User:
             return '500'
         return dumps(res)
     #Update user
-    def Update(self,iden,name,password,mail,rol):
+    def Update(self,iden,name,password,mail,rol,icon):
         try:
-            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,'mail':mail,'rol':rol}})
+            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,'mail':mail,'rol':rol,'icon':icon}})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )

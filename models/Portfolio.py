@@ -3,7 +3,7 @@ from bson.json_util import loads, dumps
 from const import Const
 import sys
 class Portfolio():
-    def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',coments=''):
+    def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',coments='',points=''):
         client = MongoClient(Const.URL)
         db = client.Project
         self.conn = db.users
@@ -12,10 +12,11 @@ class Portfolio():
         self.text=text
         self.author=author
         self.coments=coments
+        self.points = points
 
     def Post(self):
         try:
-            sel = self.conn.insert_one({'titulo':self.titulo,'archivo':self.archivo,'texto':self.texto,'autor':self.author,'coments':self.coments})
+            sel = self.conn.insert_one({'titulo':self.titulo,'archivo':self.archivo,'texto':self.texto,'autor':self.author,'coments':self.coments,'points':self.points})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -38,10 +39,17 @@ class Portfolio():
             return '500'
         return '200'
     
-    def Update(self,port):
+    def Update(self,iden,file,titulo,texto,author,coments,points):
         try:
-            res = self.conn.update_one({'_id':port['_id']},{{'archivo':port['file'],'titulo':port['titulo'],
-            'texto':port['texto'],'autor':port['author'],'coments':port['coments']}})
+            res = self.conn.update_one({'_id':ObjectId(iden)},{{'archivo':file,'titulo':titulo,
+            'texto':texto,'autor':author,'coments': coments,'points':points}})
         except:
             return '500'
         return '200' 
+
+    def GetById(self,iden):
+        try:
+            res = self.conn.find_one({'_id':ObjectId(iden)})
+        except:
+            return '500'
+        return dumps(res)

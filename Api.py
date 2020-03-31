@@ -10,6 +10,7 @@ from datetime import datetime
 from datetime import timedelta 
 from ast import literal_eval 
 from flask_mail import *
+from models.Portfolio import Portfolio
 import sys
 
 app = Flask(__name__)
@@ -57,7 +58,8 @@ def user(ident=''):
         mai = request.json['mail']
         password = hashing.hash_value(request.json['password'], salt='abcd')
         user = User(request.json['username'],password,mai,request.json['rol'])
-        msg = Message("Hello",
+        msg = Message(subject="Hello",
+                  body='Example Body',
                   sender='proyectofinalmail@gmail.com',
                   recipients=["mediadocena13@gmail.com"])#CORREO DE PRUEBA CAMBIAR POR VARIABLE MAIL
         mail.send(msg)
@@ -74,8 +76,9 @@ def user(ident=''):
         mail = request.json['mail']
         rol = request.json['rol']
         iden = request.json['_id']
+        icon = request.json['icon']
         user = User()
-        res = user.Update(iden,name,password,mail,rol)
+        res = user.Update(iden,name,password,mail,rol,icon)
         return res
     #DELETE
     elif request.method == 'DELETE':
@@ -114,9 +117,12 @@ def login():
         name = h['name']
         mail = h['mail']
         rol = h['rol']
+        icon = ''
+        if h['icon']:
+            icon = h['icon']
         return jsonify(
             access_token=access_token,_id=_id,name=name,mail=mail,
-            rol=rol,exp=date.strftime("%m/%d/%Y, %H:%M:%S")), 200
+            rol=rol,icon=icon,exp=date.strftime("%m/%d/%Y, %H:%M:%S")), 200
 
 @app.route('/upload', methods=['POST'])
 def Upload():
@@ -145,6 +151,22 @@ def download(name):
     if request.method == 'GET':
         print(escape(name))
         return send_file('public/files/'+escape(name), mimetype='image')
+
+@app.route('/portfolio',methods=['POST','PUT','GET'])
+@app.route('/portfolio/<iden>',methods=['DELETE'])
+@jwt_required
+def portfolio(iden):
+    port = Portfolio()
+    if request.method == 'GET':
+        return port.GetAll()
+    elif request.method == 'POST':
+        port = Portfolio(request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
+        return port.Post()
+    elif request.method == 'PUT':
+        return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
+    elif request.method == 'DELETE':
+        return port.Delete(escape(iden))
+    return jsonify({"msg":"Route Not Found"},400)
 
 #Run app
 @app.after_request
