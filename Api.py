@@ -118,7 +118,7 @@ def login():
         mail = h['mail']
         rol = h['rol']
         icon = ''
-        if h['icon']:
+        if 'icon' in h:
             icon = h['icon']
         return jsonify(
             access_token=access_token,_id=_id,name=name,mail=mail,
@@ -129,7 +129,6 @@ def Upload():
     if request.method == 'POST':
         try:
             f = request.files['file']
-            name = request.form['name']
             if '.png' in f.filename:
                 ext = '.png'
             elif '.jpg' in f.filename:
@@ -160,6 +159,7 @@ def portfolio(iden):
     if request.method == 'GET':
         return port.GetAll()
     elif request.method == 'POST':
+        
         port = Portfolio(request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
         return port.Post()
     elif request.method == 'PUT':

@@ -30,7 +30,9 @@
           {%endfor%}
         </tbody>
       </table>
-      <video src = "C:\Users\aleja\Desktop\Angular\Proyecto Final\Flask\ApiProject\public\files\video.mp4" width="320" height="240" controls></video>
+      <video width="320" height="240" controls>
+        <source src="C:\Users\aleja\Desktop\Angular\Proyecto Final\Flask\ApiProject\public\files\video.mp4" type="video/mp4">
+      </video>
       <form action = "/upload" method = "post" enctype="multipart/form-data">  
         <input type="file" name="file"/> 
         <input type="text" name="name"> 
