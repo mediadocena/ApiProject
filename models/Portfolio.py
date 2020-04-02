@@ -6,7 +6,7 @@ class Portfolio():
     def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',coments='',points=''):
         client = MongoClient(Const.URL)
         db = client.Project
-        self.conn = db.users
+        self.conn = db.portfolio
         self.title=title
         self.file=file
         self.text=text
@@ -16,7 +16,7 @@ class Portfolio():
 
     def Post(self):
         try:
-            sel = self.conn.insert_one({'titulo':self.titulo,'archivo':self.archivo,'texto':self.texto,'autor':self.author,'coments':self.coments,'points':self.points})
+            sel = self.conn.insert_one({'titulo':self.title,'archivo':self.file,'texto':self.text,'autor':self.author,'coments':self.coments,'points':self.points})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )

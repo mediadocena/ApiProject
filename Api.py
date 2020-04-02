@@ -127,6 +127,7 @@ def login():
 @app.route('/upload', methods=['POST'])
 def Upload():
     if request.method == 'POST':
+        f = ''
         try:
             f = request.files['file']
             if '.png' in f.filename:
@@ -137,13 +138,12 @@ def Upload():
                 ext = '.jpeg'
             elif '.mp3' in f.filename:
                 ext = '.mp3'  
-            print(name+ext)
-            f.save('./public/files/' + name+ext)
+            f.save('./public/files/' + f.filename + ext)
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '{"status" : 500 , "error":"Upload error"}'
-    return '{"status":200}'
+    return 'http://127.0.0.1:5000/download/'+f.filename
     
 @app.route('/download/<name>',methods=['GET'])
 def download(name):
@@ -153,14 +153,14 @@ def download(name):
 
 @app.route('/portfolio',methods=['POST','PUT','GET'])
 @app.route('/portfolio/<iden>',methods=['DELETE'])
-@jwt_required
-def portfolio(iden):
+#@jwt_required
+def portfolio(iden=''):
     port = Portfolio()
     if request.method == 'GET':
         return port.GetAll()
     elif request.method == 'POST':
-        
-        port = Portfolio(request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
+        filename = Upload()
+        port = Portfolio(request.form['titulo'],filename,request.form['text'],request.form['author'])
         return port.Post()
     elif request.method == 'PUT':
         return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
