@@ -117,6 +117,7 @@ def login():
         name = h['name']
         mail = h['mail']
         rol = h['rol']
+        verified = h['verified']
         icon = ''
         if 'icon' in h:
             icon = h['icon']
@@ -153,7 +154,7 @@ def download(name):
 
 @app.route('/portfolio',methods=['POST','PUT','GET'])
 @app.route('/portfolio/<iden>',methods=['DELETE'])
-#@jwt_required
+@jwt_required
 def portfolio(iden=''):
     port = Portfolio()
     if request.method == 'GET':
