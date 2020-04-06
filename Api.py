@@ -2,10 +2,7 @@ from flask import *
 from models.User import User
 from flask_hashing import Hashing
 from bson.json_util import loads, dumps
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_identity,create_refresh_token
-)
+from flask_jwt_extended import *
 from datetime import datetime  
 from datetime import timedelta 
 from ast import literal_eval 
@@ -26,7 +23,7 @@ hashing = Hashing(app)
 app.config['JWT_SECRET_KEY'] = 'jwtls132526nbcs44465873nasl'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 864000
 jwt = JWTManager(app)
-
+blacklist = set()
 #Error Handler
 @app.errorhandler(404)
 def page_not_found(error):
@@ -53,6 +50,15 @@ def Refresh():
         'access_token': create_access_token(identity=current_user)
     }
     return jsonify(ret), 200
+
+# Endpoint for revoking the current users access token
+@app.route('/logout', methods=['DELETE'])
+@jwt_required
+def logout():
+    jti = get_raw_jwt()['jti']
+    blacklist.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
+
 #Usuarios
 @app.route('/user' ,methods=['POST','GET','PUT'])
 @app.route('/user/<ident>',methods=['DELETE'])
@@ -136,7 +142,7 @@ def login():
             icon = h['icon']
         return jsonify(
             access_token=access_token,refresh_token=refresh_token,_id=_id,name=name,mail=mail,
-            rol=rol,icon=icon,exp=date.strftime("%m/%d/%Y, %H:%M:%S")), 200
+            rol=rol,icon=icon,exp=date.strftime("%m %d %Y %H:%M:%S GMT+0200")), 200
 
 @app.route('/upload', methods=['POST'])
 def Upload():
