@@ -4,7 +4,7 @@ from flask_hashing import Hashing
 from bson.json_util import loads, dumps
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
-    get_jwt_identity
+    get_jwt_identity,create_refresh_token
 )
 from datetime import datetime  
 from datetime import timedelta 
@@ -44,6 +44,15 @@ def redirect():
 def prueba():
     return '<h1>Prueba</h1>'
 """
+#Generar nuevos token
+@app.route('/refresh', methods=['POST'])
+@jwt_refresh_token_required
+def Refresh():
+    current_user = get_jwt_identity()
+    ret = {
+        'access_token': create_access_token(identity=current_user)
+    }
+    return jsonify(ret), 200
 #Usuarios
 @app.route('/user' ,methods=['POST','GET','PUT'])
 @app.route('/user/<ident>',methods=['DELETE'])
@@ -58,12 +67,15 @@ def user(ident=''):
         mai = request.json['mail']
         password = hashing.hash_value(request.json['password'], salt='abcd')
         user = User(request.json['username'],password,mai,request.json['rol'])
-        msg = Message(subject="Hello",
-                  body='Example Body',
-                  sender='proyectofinalmail@gmail.com',
-                  recipients=["mediadocena13@gmail.com"])#CORREO DE PRUEBA CAMBIAR POR VARIABLE MAIL
-        mail.send(msg)
-        return 'Response: '+ user.saveToDB()
+        if user.existsMail is True:
+            msg = Message(subject="Confirmación de cuenta",
+                    body='Gracias por registrarte en la página, para completar tu cuenta, pincha en el enlace:<a href="localhost:4200/Confirm/'+mai+'">Confirmar</a>',
+                    sender='proyectofinalmail@gmail.com',
+                    recipients=[mai])
+            mail.send(msg)
+            return 'Response: '+ user.saveToDB()
+        else:
+            return jsonify({"msg": "Mail already exists"}), 400
     #GET
     elif request.method == 'GET':
         user = User()
@@ -86,7 +98,7 @@ def user(ident=''):
         res = user.Delete(escape(ident))
         return res
     else:
-        return '{"status":404 ,"error":"Method Not Found"}'
+        return jsonify({"error":"Method Not Found"}), 404
         
 #LOGIN
 @app.route('/login' ,methods=['POST'])
@@ -112,6 +124,7 @@ def login():
         date = date + timedelta(seconds=864000)
         # Identity can be any data that is json serializable
         access_token = create_access_token(identity=username)
+        refresh_token = create_refresh_token(identity=username)
         h = literal_eval(h)
         _id = h['_id']
         name = h['name']
@@ -122,7 +135,7 @@ def login():
         if 'icon' in h:
             icon = h['icon']
         return jsonify(
-            access_token=access_token,_id=_id,name=name,mail=mail,
+            access_token=access_token,refresh_token=refresh_token,_id=_id,name=name,mail=mail,
             rol=rol,icon=icon,exp=date.strftime("%m/%d/%Y, %H:%M:%S")), 200
 
 @app.route('/upload', methods=['POST'])

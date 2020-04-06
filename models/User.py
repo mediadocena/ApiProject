@@ -86,3 +86,15 @@ class User:
             print( "Error: %s" % e )
             return '500'
         return '200'
+
+    def existsMail(self,mail):
+        try:
+            res = self.conn.find_one({'mail':mail})
+        except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
+            return '500'
+        if res is None:
+            return False
+        else:
+            return True
