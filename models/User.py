@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import sys
 class User:
     #Class constructor
-    def __init__(self, nam='', passwor='', mai='', role='',icon='',verified=False):
+    def __init__(self, nam='', passwor='', mai='', role='',icon='',verified=False,cat='',banner=''):
         #Conexión a mongodb
         client = MongoClient(Const.URL)
         db = client.Project
@@ -18,11 +18,15 @@ class User:
         self.rol = role
         self.verified=verified
         self.icon = icon
+        self.category = cat
+        self.banner = banner
     #Insert a new User to Mongo
     def saveToDB(self):
         good = True
         try:
-            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,'rol':self.rol,'icon':self.icon,'verified':self.verified})
+            self.conn.insert_one({'name':self.name,'password':self.password,'mail':self.mail,
+            'rol':self.rol,'icon':self.icon,'verified':self.verified,'category':self.category,
+            'banner':self.banner})
         except:
             good = False
         if good:
@@ -59,9 +63,10 @@ class User:
             return '500'
         return dumps(res)
     #Update user
-    def Update(self,iden,name,password,mail,rol,icon):
+    def Update(self,iden,name,password,mail,rol,icon,category,banner):
         try:
-            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,'mail':mail,'rol':rol,'icon':icon}})
+            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,
+            'mail':mail,'rol':rol,'icon':icon,'category':category,'banner':banner}})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )

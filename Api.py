@@ -95,8 +95,10 @@ def user(ident=''):
         rol = request.json['rol']
         iden = request.json['_id']
         icon = request.json['icon']
+        category = request.json['category']
+        banner = request.json['banner']
         user = User()
-        res = user.Update(iden,name,password,mail,rol,icon)
+        res = user.Update(iden,name,password,mail,rol,icon,category,banner)
         return res
     #DELETE
     elif request.method == 'DELETE':
@@ -137,12 +139,14 @@ def login():
         mail = h['mail']
         rol = h['rol']
         verified = h['verified']
-        icon = ''
-        if 'icon' in h:
-            icon = h['icon']
+        category = h['category']
+        banner = h['banner']
+        icon = h['icon']
         return jsonify(
             access_token=access_token,refresh_token=refresh_token,_id=_id,name=name,mail=mail,
-            rol=rol,icon=icon,exp=date.strftime("%m %d %Y %H:%M:%S GMT+0200")), 200
+            rol=rol,icon=icon,verified=verified,category=category,banner=banner,
+            exp=date.strftime("%m %d %Y %H:%M:%S GMT+0200")
+            ), 200
 
 @app.route('/upload', methods=['POST'])
 def Upload():
@@ -158,7 +162,7 @@ def Upload():
                 ext = '.jpeg'
             elif '.mp3' in f.filename:
                 ext = '.mp3'  
-            f.save('./public/files/' + f.filename + ext)
+            f.save('./public/files/' + f.filename)
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -173,17 +177,22 @@ def download(name):
 
 @app.route('/portfolio',methods=['POST','PUT','GET'])
 @app.route('/portfolio/<iden>',methods=['DELETE'])
-@jwt_required
 def portfolio(iden=''):
     port = Portfolio()
     if request.method == 'GET':
         return port.GetAll()
     elif request.method == 'POST':
         filename = Upload()
-        port = Portfolio(request.form['titulo'],filename,request.form['text'],request.form['author'])
+        port = Portfolio(
+            title=request.form['titulo'],
+            file=filename,
+            text=request.form['text'],
+            author=request.form['author'],
+            category=request.form['category'])
         return port.Post()
     elif request.method == 'PUT':
-        return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],request.json['text'],request.json['author'],request.json['coments'],request.json['points'])
+        return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],
+        request.json['text'],request.json['author'],request.json['coments'],request.json['points'],request.json['category'])
     elif request.method == 'DELETE':
         return port.Delete(escape(iden))
     return jsonify({"msg":"Route Not Found"},400)
