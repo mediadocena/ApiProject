@@ -3,7 +3,8 @@ from bson.json_util import loads, dumps
 from const import Const
 import sys
 class Portfolio():
-    def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',coments='',points='',category=''):
+    def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',
+    coments='',points='',category='',tags=''):
         client = MongoClient(Const.URL)
         db = client.Project
         self.conn = db.portfolio
@@ -14,11 +15,13 @@ class Portfolio():
         self.coments=coments
         self.points = points
         self.category=category
+        self.tags = tags
 
     def Post(self):
         try:
             sel = self.conn.insert_one({'titulo':self.title,'archivo':self.file,
-            'texto':self.text,'autor':self.author,'coments':self.coments,'points':self.points,'category':self.category})
+            'texto':self.text,'autor':self.author,'coments':self.coments,
+            'points':self.points,'category':self.category,'tags':self.tags})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -41,10 +44,10 @@ class Portfolio():
             return '500'
         return '200'
     
-    def Update(self,iden,file,titulo,texto,author,coments,points,category):
+    def Update(self,iden,file,titulo,texto,author,coments,points,category,tags):
         try:
             res = self.conn.update_one({'_id':ObjectId(iden)},{{'archivo':file,'titulo':titulo,
-            'texto':texto,'autor':author,'coments': coments,'points':points,'category':category}})
+            'texto':texto,'autor':author,'coments': coments,'points':points,'category':category,'tags':tags}})
         except:
             return '500'
         return '200' 

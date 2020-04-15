@@ -177,7 +177,7 @@ def download(name):
 
 @app.route('/portfolio',methods=['POST','PUT','GET'])
 @app.route('/portfolio/<iden>',methods=['DELETE'])
-def portfolio(iden=''):
+def portfolio(iden=''): 
     port = Portfolio()
     if request.method == 'GET':
         return port.GetAll()
@@ -188,7 +188,9 @@ def portfolio(iden=''):
             file=filename,
             text=request.form['text'],
             author=request.form['author'],
-            category=request.form['category'])
+            category=request.form['category'],
+            tags = list(str(request.form['tags']).split(',')))
+        print(str(request.form['tags']).split(','))
         return port.Post()
     elif request.method == 'PUT':
         return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],
