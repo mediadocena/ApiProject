@@ -95,11 +95,19 @@ class User:
     def existsMail(self,mail):
         try:
             res = self.conn.find_one({'mail':mail})
+            if res is None:
+                return False
+            else:
+                return True
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '500'
-        if res is None:
-            return False
-        else:
-            return True
+        def Confirm(_id):
+            try:
+                self.conn.update_one({'_id':ObjectId(_id)},{"$set": {'verified':'true'}})
+            except:
+                e = sys.exc_info()[0]
+                print( "Error: %s" % e )
+                return '500'
+            return '200' 

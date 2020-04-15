@@ -58,30 +58,46 @@ def logout():
     jti = get_raw_jwt()['jti']
     blacklist.add(jti)
     return jsonify({"msg": "Successfully logged out"}), 200
+@app.route('/Confirm/<_id>')
+def Confirm(_id):
+    user = User()
+    return user.Confirm(_id)
+    print('confirmed')
+def sendMail(mai,username,password):
+    user = User().findLogin(mai,password)
+    _id = json.loads(user)
+    _id = _id['_id']
+    _id = _id['$oid']
+    mail = Mail(app)
+    msg = Message(subject="Confirmación de cuenta",
+                        sender='proyectofinalmail@gmail.com',
+                        recipients = [mai])
+    link = 'http://127.0.0.1:5000/Confirm'+_id
+    msg.body = f'Gracias por registrarte en la página, para completar tu cuenta,pincha en el enlace: {link}'
 
+
+    mail.send(msg)
 #Usuarios
-@app.route('/user' ,methods=['POST','GET','PUT'])
+@app.route('/postuser',methods=['POST'])
+def postuser():
+        mai = request.json['mail']
+        sendmail = False
+        password = hashing.hash_value(request.json['password'], salt='abcd')
+        user = User(request.json['username'],password,mai,request.json['rol'])
+        if user.existsMail:
+            user.saveToDB() 
+            sendMail(mai,request.json['username'],password)
+        else:
+            print("msg: Mail already exists")
+            return jsonify({"msg": "Mail already exists"}), 400
+
+@app.route('/user' ,methods=['GET','PUT'])
 @app.route('/user/<ident>',methods=['DELETE'])
 @jwt_required
 def user(ident=''):
     current_user = get_jwt_identity()
     if current_user is None:
         return jsonify({"msg": "Missing token"}), 400
-    #POST
-    if request.method == 'POST':
-        mail = Mail(app)
-        mai = request.json['mail']
-        password = hashing.hash_value(request.json['password'], salt='abcd')
-        user = User(request.json['username'],password,mai,request.json['rol'])
-        if user.existsMail is True:
-            msg = Message(subject="Confirmación de cuenta",
-                    body='Gracias por registrarte en la página, para completar tu cuenta, pincha en el enlace:<a href="localhost:4200/Confirm/'+mai+'">Confirmar</a>',
-                    sender='proyectofinalmail@gmail.com',
-                    recipients=[mai])
-            mail.send(msg)
-            return 'Response: '+ user.saveToDB()
-        else:
-            return jsonify({"msg": "Mail already exists"}), 400
     #GET
     elif request.method == 'GET':
         user = User()
