@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import sys
 class User:
     #Class constructor
-    def __init__(self, nam='', passwor='', mai='', role='',icon='',verified=False,cat='',banner=''):
+    def __init__(self, nam='', passwor='', mai='', role='',icon='',verified='false',cat='',banner=''):
         #Conexión a mongodb
         client = MongoClient(Const.URL)
         db = client.Project
@@ -103,11 +103,11 @@ class User:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '500'
-        def Confirm(_id):
+    def Confirm(self,_id):
             try:
                 self.conn.update_one({'_id':ObjectId(_id)},{"$set": {'verified':'true'}})
             except:
                 e = sys.exc_info()[0]
                 print( "Error: %s" % e )
                 return '500'
-            return '200' 
+            return '200'     

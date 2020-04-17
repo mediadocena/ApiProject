@@ -58,11 +58,9 @@ def logout():
     jti = get_raw_jwt()['jti']
     blacklist.add(jti)
     return jsonify({"msg": "Successfully logged out"}), 200
-@app.route('/Confirm/<_id>')
+@app.route('/Confirm/<_id>',methods=['GET'])
 def Confirm(_id):
-    user = User()
-    return user.Confirm(_id)
-    print('confirmed')
+    return User().Confirm(escape(_id))
 def sendMail(mai,username,password):
     user = User().findLogin(mai,password)
     _id = json.loads(user)
@@ -72,21 +70,20 @@ def sendMail(mai,username,password):
     msg = Message(subject="Confirmación de cuenta",
                         sender='proyectofinalmail@gmail.com',
                         recipients = [mai])
-    link = 'http://127.0.0.1:5000/Confirm'+_id
+    link = 'http://localhost:4200/verify/'+_id
     msg.body = f'Gracias por registrarte en la página, para completar tu cuenta,pincha en el enlace: {link}'
-
-
     mail.send(msg)
+    return '200'
 #Usuarios
 @app.route('/postuser',methods=['POST'])
 def postuser():
         mai = request.json['mail']
         sendmail = False
         password = hashing.hash_value(request.json['password'], salt='abcd')
-        user = User(request.json['username'],password,mai,request.json['rol'])
-        if user.existsMail:
+        user = User(request.json['username'],password,mai,request.json['rol'],icon=request.json['icono'])
+        if user.existsMail(mai) == False:
             user.saveToDB() 
-            sendMail(mai,request.json['username'],password)
+            return sendMail(mai,request.json['username'],password)
         else:
             print("msg: Mail already exists")
             return jsonify({"msg": "Mail already exists"}), 400
@@ -190,6 +187,16 @@ def download(name):
     if request.method == 'GET':
         print(escape(name))
         return send_file('public/files/'+escape(name), mimetype='image')
+@app.route('/userportfolio/<_id>',methods=['GET'])
+@jwt_required
+def UserPortfolioID(_id):
+    port = Portfolio()
+    return port.GetByUserId(escape(_id))
+@app.route('/getportfolio/<_id>',methods=['GET'])
+@jwt_required
+def GetPortfolio(_id):
+    port = Portfolio()
+    return port.GetById(escape(_id))
 
 @app.route('/portfolio',methods=['POST','PUT','GET'])
 @app.route('/portfolio/<iden>',methods=['DELETE'])

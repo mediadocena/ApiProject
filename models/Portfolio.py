@@ -2,6 +2,7 @@ from pymongo import *
 from bson.json_util import loads, dumps
 from const import Const
 import sys
+from bson.objectid import ObjectId
 class Portfolio():
     def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',
     coments='',points='',category='',tags=''):
@@ -55,6 +56,14 @@ class Portfolio():
     def GetById(self,iden):
         try:
             res = self.conn.find_one({'_id':ObjectId(iden)})
+        except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
+            return '500'
+        return dumps(res)
+    def GetByUserId(self,iden):
+        try:
+            res = list(self.conn.find({'autor':iden}))
         except:
             return '500'
         return dumps(res)
