@@ -179,7 +179,7 @@ def Upload():
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
-            return '{"status" : 500 , "error":"Upload error"}'
+            return 'https://davidlanau.com/wp-content/uploads/redirigir-errores-404-home-wordpress.png'
     return 'http://127.0.0.1:5000/download/'+f.filename
     
 @app.route('/download/<name>',methods=['GET'])
