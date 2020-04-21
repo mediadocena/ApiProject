@@ -216,8 +216,10 @@ def portfolio(iden=''):
         print(str(request.form['tags']).split(','))
         return port.Post()
     elif request.method == 'PUT':
-        return port.Update(request.json['id'],request.json['titulo'],request.json['file'],request.json['titulo'],
-        request.json['text'],request.json['author'],request.json['coments'],request.json['points'],request.json['category'])
+        iden = request.json['_id']
+        return port.Update(iden['$oid'],request.json['archivo'],request.json['titulo'],
+        request.json['texto'],request.json['autor'],request.json['coments'],
+        request.json['points'],request.json['category'],request.json['tags'])
     elif request.method == 'DELETE':
         return port.Delete(escape(iden))
     return jsonify({"msg":"Route Not Found"},400)

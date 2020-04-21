@@ -5,7 +5,7 @@ import sys
 from bson.objectid import ObjectId
 class Portfolio():
     def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',
-    coments='',points='',category='',tags=''):
+    coments='',points='',category='',tags='',totalpoints=''):
         client = MongoClient(Const.URL)
         db = client.Project
         self.conn = db.portfolio
@@ -17,12 +17,13 @@ class Portfolio():
         self.points = points
         self.category=category
         self.tags = tags
+        self.totalpoints=totalpoints
 
     def Post(self):
         try:
             sel = self.conn.insert_one({'titulo':self.title,'archivo':self.file,
             'texto':self.text,'autor':self.author,'coments':self.coments,
-            'points':self.points,'category':self.category,'tags':self.tags})
+            'points':self.points,'category':self.category,'tags':self.tags,'totalpoints':self.totalpoints})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -45,11 +46,18 @@ class Portfolio():
             return '500'
         return '200'
     
-    def Update(self,iden,file,titulo,texto,author,coments,points,category,tags):
+    def Update(self,iden,fil,titulo,texto,author,coments,points,category,tags):
         try:
-            res = self.conn.update_one({'_id':ObjectId(iden)},{{'archivo':file,'titulo':titulo,
-            'texto':texto,'autor':author,'coments': coments,'points':points,'category':category,'tags':tags}})
+            totalpoints = 0 
+            for point in points:
+                totalpoints += int(point['rate'])
+            self.conn.update_one({'_id':ObjectId(iden)},{"$set":{'titulo':titulo,'archivo':fil,
+            'texto':texto,'autor':author,'coments': coments,'points':points,'category':category,'tags':tags,
+            'totalpoints':totalpoints}})
+            print('3')
         except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
             return '500'
         return '200' 
 
