@@ -54,7 +54,6 @@ class Portfolio():
             self.conn.update_one({'_id':ObjectId(iden)},{"$set":{'titulo':titulo,'archivo':fil,
             'texto':texto,'autor':author,'coments': coments,'points':points,'category':category,'tags':tags,
             'totalpoints':totalpoints}})
-            print('3')
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )

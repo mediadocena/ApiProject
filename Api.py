@@ -61,6 +61,7 @@ def logout():
 @app.route('/Confirm/<_id>',methods=['GET'])
 def Confirm(_id):
     return User().Confirm(escape(_id))
+
 def sendMail(mai,username,password):
     user = User().findLogin(mai,password)
     _id = json.loads(user)
