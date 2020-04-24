@@ -194,7 +194,6 @@ def UserPortfolioID(_id):
     port = Portfolio()
     return port.GetByUserId(escape(_id))
 @app.route('/getportfolio/<_id>',methods=['GET'])
-@jwt_required
 def GetPortfolio(_id):
     port = Portfolio()
     return port.GetById(escape(_id))

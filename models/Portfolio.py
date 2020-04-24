@@ -5,7 +5,7 @@ import sys
 from bson.objectid import ObjectId
 class Portfolio():
     def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',
-    coments='',points='',category='',tags='',totalpoints=''):
+    coments=[],points='',category='',tags='',totalpoints=''):
         client = MongoClient(Const.URL)
         db = client.Project
         self.conn = db.portfolio
