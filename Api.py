@@ -104,10 +104,10 @@ def user(ident=''):
     #PUT
     elif request.method == 'PUT':
         name = request.json['name']
-        password = request.json['password']
+        password = hashing.hash_value(request.json['password'], salt='abcd')
         mail = request.json['mail']
         rol = request.json['rol']
-        iden = request.json['_id']
+        iden = request.json['_id']['$oid']
         icon = request.json['icon']
         category = request.json['category']
         banner = request.json['banner']
