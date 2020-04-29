@@ -63,15 +63,27 @@ class User:
             return '500'
         return dumps(res)
     #Update user
-    def Update(self,iden,name,password,mail,rol,icon,category,banner):
+    def Update(self,iden='',name='',password='',mail='',rol='',icon='',category='',banner=''):
         try:
-            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,
-            'mail':mail,'rol':rol,'icon':icon,'category':category,'banner':banner}})
+            if password == '':
+                self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,
+                'mail':mail,'rol':rol,'icon':icon,'category':category,'banner':banner}})
+            else:
+                self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'name':name,'password':password,
+                'mail':mail,'rol':rol,'icon':icon,'category':category,'banner':banner}})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '500'
-        return '200' 
+        return '200'
+    def UpdateIcon(self,iden,icon):
+        try:
+            self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'icon':icon}})
+        except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
+            return '500'
+        return '200'      
     def Verify(self,iden):
         try:
             self.conn.update_one({'_id':ObjectId(iden)},{"$set": {'verified':True}})

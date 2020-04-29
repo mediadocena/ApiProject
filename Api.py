@@ -8,6 +8,7 @@ from datetime import timedelta
 from ast import literal_eval 
 from flask_mail import *
 from models.Portfolio import Portfolio
+import os
 import sys
 
 app = Flask(__name__)
@@ -88,7 +89,14 @@ def postuser():
         else:
             print("msg: Mail already exists")
             return jsonify({"msg": "Mail already exists"}), 400
-
+@app.route('/changeicon',methods=['put'])
+@jwt_required
+def ChangeIcon():
+        iden = request.json['_id']['$oid']
+        icon = request.json['icon']
+        user = User()
+        res = user.UpdateIcon(iden,icon)
+        return res
 @app.route('/user' ,methods=['GET','PUT'])
 @app.route('/user/<ident>',methods=['DELETE'])
 @jwt_required
@@ -104,7 +112,10 @@ def user(ident=''):
     #PUT
     elif request.method == 'PUT':
         name = request.json['name']
-        password = hashing.hash_value(request.json['password'], salt='abcd')
+        try:
+            password = hashing.hash_value(request.json['password'], salt='abcd')
+        except:
+            password = ''
         mail = request.json['mail']
         rol = request.json['rol']
         iden = request.json['_id']['$oid']
@@ -166,6 +177,7 @@ def login():
 def Upload():
     if request.method == 'POST':
         f = ''
+        filename = ''
         try:
             f = request.files['file']
             if '.png' in f.filename:
@@ -176,7 +188,14 @@ def Upload():
                 ext = '.jpeg'
             elif '.mp3' in f.filename:
                 ext = '.mp3'  
-            f.save('./public/files/' + f.filename)
+            if request.form['filename']:
+                filename = request.form['filename']
+                f.save('./public/files/' + filename + ext)
+                return jsonify({"msg":"Ok"},200)
+            else:
+                filename = f.filename
+                f.save('./public/files/' + filename)
+            
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -187,7 +206,14 @@ def Upload():
 def download(name):
     if request.method == 'GET':
         print(escape(name))
-        return send_file('public/files/'+escape(name), mimetype='image')
+        return send_file('public/files/'+escape(name), mimetype='image', cache_timeout=0)
+@app.route('/delete/<name>',methods=['DELETE'])
+def delete(name):
+    if os.path.exists('public/files/'+escape(name)):
+         os.remove('public/files/'+escape(name))
+         return jsonify({"msg":"Deleted"})
+    else:
+        return jsonify({"msg":"File doesnt exist"})
 @app.route('/userportfolio/<_id>',methods=['GET'])
 @jwt_required
 def UserPortfolioID(_id):
@@ -227,6 +253,7 @@ def portfolio(iden=''):
 #Run app
 @app.after_request
 def after_request(response):
+    response.headers.add('Cache-Control:','no-store')
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
