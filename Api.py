@@ -10,6 +10,7 @@ from flask_mail import *
 from models.Portfolio import Portfolio
 import os
 import sys
+import ast
 
 app = Flask(__name__)
 app.config.update(
@@ -175,32 +176,44 @@ def login():
 
 @app.route('/upload', methods=['POST'])
 def Upload():
+    #CONTROLAR QUE EL NOMBRE DEL ARCHIVO EXISTA O NO
     if request.method == 'POST':
         f = ''
         filename = ''
-        try:
-            f = request.files['file']
+        control = False
+        count = 0
+        arr = []
+        #try:
+        while(control == False):
+            print(count)
+            f = request.files['file'+str(count)]
             if '.png' in f.filename:
-                ext = '.png'
+                    ext = '.png'
             elif '.jpg' in f.filename:
-                ext = '.jpg'
+                    ext = '.jpg'
             elif '.jpeg' in f.filename:
-                ext = '.jpeg'
+                    ext = '.jpeg'
             elif '.mp3' in f.filename:
-                ext = '.mp3'  
-            if request.form['filename']:
-                filename = request.form['filename']
-                f.save('./public/files/' + filename + ext)
-                return jsonify({"msg":"Ok"},200)
+                    ext = '.mp3'  
+            #if request.form['filename']:
+                    #filename = request.form['filename']
+                    #f.save('./public/files/' + filename + ext)
+                    
+                    #return jsonify({"msg":"Ok"},200)
+            #else:
+            filename = f.filename
+            f.save('./public/files/' + filename)
+            count = count+1   
+            arr.append('http://127.0.0.1:5000/download/'+filename)
+            if('file'+str(count) in request.files):
+                control = False
             else:
-                filename = f.filename
-                f.save('./public/files/' + filename)
-            
-        except:
-            e = sys.exc_info()[0]
-            print( "Error: %s" % e )
-            return 'https://davidlanau.com/wp-content/uploads/redirigir-errores-404-home-wordpress.png'
-    return 'http://127.0.0.1:5000/download/'+f.filename
+                control = True
+        #except:
+         #   e = sys.exc_info()[0]
+          #  print( "Error: %s" % e )
+           # return 'https://davidlanau.com/wp-content/uploads/redirigir-errores-404-home-wordpress.png'
+    return jsonify(arr)
     
 @app.route('/download/<name>',methods=['GET'])
 def download(name):
@@ -231,10 +244,10 @@ def portfolio(iden=''):
     if request.method == 'GET':
         return port.GetAll()
     elif request.method == 'POST':
-        filename = Upload()
+        #filename = Upload()
         port = Portfolio(
             title=request.form['titulo'],
-            file=filename,
+            file=request.form['file'],
             text=request.form['text'],
             author=request.form['author'],
             category=request.form['category'],
