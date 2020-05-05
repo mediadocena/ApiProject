@@ -204,7 +204,7 @@ def Upload():
             filename = f.filename
             f.save('./public/files/' + filename)
             count = count+1   
-            arr.append('http://127.0.0.1:5000/download/'+filename)
+            arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
             if('file'+str(count) in request.files):
                 control = False
             else:
@@ -220,13 +220,22 @@ def download(name):
     if request.method == 'GET':
         print(escape(name))
         return send_file('public/files/'+escape(name), mimetype='image', cache_timeout=0)
-@app.route('/delete/<name>',methods=['DELETE'])
-def delete(name):
-    if os.path.exists('public/files/'+escape(name)):
-         os.remove('public/files/'+escape(name))
-         return jsonify({"msg":"Deleted"})
-    else:
-        return jsonify({"msg":"File doesnt exist"})
+
+@app.route('/delete',methods=['PUT'])
+def delete():
+    try:
+        itmarr = request.json['files']
+        for itm in itmarr:
+            name = str(itm['big']).replace('http://127.0.0.1:5000/download/','')
+            print(name)
+            if os.path.exists('public/files/'+name):
+                os.remove('public/files/'+escape(name))
+    except:
+        e = sys.exc_info()
+        print( "Error: %s" % e )
+        return '500'
+    return jsonify({"msg":"All files deleted"}),200
+
 @app.route('/userportfolio/<_id>',methods=['GET'])
 @jwt_required
 def UserPortfolioID(_id):
@@ -247,7 +256,7 @@ def portfolio(iden=''):
         #filename = Upload()
         port = Portfolio(
             title=request.form['titulo'],
-            file=request.form['file'],
+            file=ast.literal_eval(request.form['file']),
             text=request.form['text'],
             author=request.form['author'],
             category=request.form['category'],
@@ -260,6 +269,7 @@ def portfolio(iden=''):
         request.json['texto'],request.json['autor'],request.json['coments'],
         request.json['points'],request.json['category'],request.json['tags'])
     elif request.method == 'DELETE':
+
         return port.Delete(escape(iden))
     return jsonify({"msg":"Route Not Found"},400)
 
