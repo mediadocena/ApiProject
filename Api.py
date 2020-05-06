@@ -179,6 +179,8 @@ def Upload():
     #CONTROLAR QUE EL NOMBRE DEL ARCHIVO EXISTA O NO
     if request.method == 'POST':
         f = ''
+        autor = request.form['Autor']
+        postname = request.form['PostName']
         filename = ''
         control = False
         count = 0
@@ -201,7 +203,9 @@ def Upload():
                     
                     #return jsonify({"msg":"Ok"},200)
             #else:
-            filename = f.filename
+            filename = str(count)+str(autor)+str(postname)
+            if os.path.exists('public/files/'+filename):
+                return jsonify({"msg":"El archivo ya existe"}),400
             f.save('./public/files/' + filename)
             count = count+1   
             arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
@@ -260,6 +264,7 @@ def portfolio(iden=''):
             text=request.form['text'],
             author=request.form['author'],
             category=request.form['category'],
+            totalpoints=0,
             tags = list(str(request.form['tags']).split(',')))
         print(str(request.form['tags']).split(','))
         return port.Post()
