@@ -5,7 +5,7 @@ import sys
 from bson.objectid import ObjectId
 class Portfolio():
     def __init__(self,title='Undefined',file='Unknown',text='...',author='Undefined',
-    coments=[],points='',category='',tags='',totalpoints=''):
+    coments=[],points='',category='',tags='',totalpoints='',totalcoments=''):
         client = MongoClient(Const.URL)
         db = client.Project
         self.conn = db.portfolio
@@ -18,12 +18,14 @@ class Portfolio():
         self.category=category
         self.tags = tags
         self.totalpoints=totalpoints
+        self.totalcoments=totalcoments
 
     def Post(self):
         try:
             sel = self.conn.insert_one({'titulo':self.title,'archivo':self.file,
             'texto':self.text,'autor':self.author,'coments':self.coments,
-            'points':self.points,'category':self.category,'tags':self.tags,'totalpoints':self.totalpoints})
+            'points':self.points,'category':self.category,'tags':self.tags,'totalpoints':self.totalpoints,
+            'totalcoments':self.totalcoments})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
@@ -49,11 +51,17 @@ class Portfolio():
     def Update(self,iden,fil,titulo,texto,author,coments,points,category,tags):
         try:
             totalpoints = 0 
+            totalcoments = 0
+
             for point in points:
                 totalpoints += int(point['rate'])
+            for com in coments:
+                totalcoments = totalcoments+1
+
             self.conn.update_one({'_id':ObjectId(iden)},{"$set":{'titulo':titulo,'archivo':fil,
             'texto':texto,'autor':author,'coments': coments,'points':points,'category':category,'tags':tags,
-            'totalpoints':totalpoints}})
+            'totalpoints':totalpoints,
+            'totalcoments':totalcoments}})
         except:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )

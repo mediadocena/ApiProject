@@ -181,6 +181,7 @@ def Upload():
         f = ''
         autor = request.form['Autor']
         postname = request.form['PostName']
+        tipo = request.form['category']
         filename = ''
         control = False
         count = 0
@@ -206,9 +207,20 @@ def Upload():
             filename = str(count)+str(autor)+str(postname)
             if os.path.exists('public/files/'+filename):
                 return jsonify({"msg":"El archivo ya existe"}),400
-            f.save('./public/files/' + filename)
+            
             count = count+1   
-            arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
+            if tipo == 'Dibujo/fotografía':
+                if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
+                    f.save('./public/files/' + filename)
+                    arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
+                else:
+                    pass
+            elif tipo == 'Música':
+                if ext != '.mp3':
+                    pass
+                else:
+                    f.save('./public/files/' + filename)
+                    arr.append({'title':f.filename,'link':'http://127.0.0.1:5000/download/'+filename})
             if('file'+str(count) in request.files):
                 control = False
             else:
@@ -226,6 +238,7 @@ def download(name):
         return send_file('public/files/'+escape(name), mimetype='image', cache_timeout=0)
 
 @app.route('/delete',methods=['PUT'])
+@jwt_required
 def delete():
     try:
         itmarr = request.json['files']
@@ -265,6 +278,7 @@ def portfolio(iden=''):
             author=request.form['author'],
             category=request.form['category'],
             totalpoints=0,
+            totalcoments=0,
             tags = list(str(request.form['tags']).split(',')))
         print(str(request.form['tags']).split(','))
         return port.Post()
