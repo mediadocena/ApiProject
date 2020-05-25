@@ -62,6 +62,14 @@ class User:
         except:
             return '500'
         return dumps(res)
+
+    def getUsernames(self):
+        res = None
+        try:
+            res = list(self.conn.find({},{'password':0,'mail':0,'rol':0,'category':0,'banner':0,'icon':0,'_id':0,'verified':0}))
+        except:
+            return '500'
+        return dumps(res)
     #Update user
     def Update(self,iden='',name='',password='',mail='',rol='',icon='',category='',banner=''):
         try:
@@ -115,6 +123,17 @@ class User:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '500'
+    def existsUsername(self,name):
+        try:
+            res = self.conn.find_one({'name':name})
+            if res is None:
+                return False
+            else:
+                return True
+        except:
+            e = sys.exc_info()[0]
+            print( "Error: %s" % e )
+            return '500'
     def Confirm(self,_id):
             try:
                 self.conn.update_one({'_id':ObjectId(_id)},{"$set": {'verified':'true'}})
@@ -122,4 +141,17 @@ class User:
                 e = sys.exc_info()[0]
                 print( "Error: %s" % e )
                 return '500'
-            return '200'     
+            return '200'    
+
+    def GetUserByID(self,iden):
+            try:
+                sel = self.conn.find_one({'_id':ObjectId(iden)},{'password':0})
+                print('Login Data:',sel)
+                if sel == []:
+                    return False
+                else:
+                    return dumps(sel)
+            except:
+                e = sys.exc_info()[0]
+                print( "Error: %s" % e )
+            return '500'

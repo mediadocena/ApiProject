@@ -8,22 +8,30 @@ from datetime import timedelta
 from ast import literal_eval 
 from flask_mail import *
 from models.Portfolio import Portfolio
+from flask_compress import Compress
 import os
 import sys
 import ast
-
+compress = Compress()
 app = Flask(__name__)
+compress.init_app(app)
+hashing = Hashing(app)
+defaults = ['text/html', 'text/css', 'text/xml', 'application/json',
+                    'application/javascript','image/png','image/jpg','video/mp4','audio/mp3']
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=465,
     MAIL_USE_SSL=True,
     MAIL_USERNAME='proyectofinalmail@gmail.com',
-    MAIL_PASSWORD='tujbjlnapolrwqad'
+    MAIL_PASSWORD='tujbjlnapolrwqad',
+    COMPRESS_ALGORITHM = 'gzip',
+    COMPRESS_MIMETYPES = defaults
 )
-hashing = Hashing(app)
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = 'jwtls132526nbcs44465873nasl'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 864000
+#16mb max
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 jwt = JWTManager(app)
 blacklist = set()
 #Error Handler
@@ -35,14 +43,6 @@ def page_not_found(error):
 def main():
     return render_template('MainTemplate.html')
 #Endpoints and Methods
-"""
-@app.route("/")
-def redirect():
-    return main()
-@app.route("/prueba")
-def prueba():
-    return '<h1>Prueba</h1>'
-"""
 #Generar nuevos token
 @app.route('/refresh', methods=['POST'])
 @jwt_refresh_token_required
@@ -84,12 +84,12 @@ def postuser():
         sendmail = False
         password = hashing.hash_value(request.json['password'], salt='abcd')
         user = User(request.json['username'],password,mai,request.json['rol'],icon=request.json['icono'])
-        if user.existsMail(mai) == False:
+        if user.existsMail(mai) == False and user.existsUsername == False:
             user.saveToDB() 
             return sendMail(mai,request.json['username'],password)
         else:
             print("msg: Mail already exists")
-            return jsonify({"msg": "Mail already exists"}), 400
+            return jsonify({"msg": "Mail or username already exists"}), 400
 @app.route('/changeicon',methods=['put'])
 @jwt_required
 def ChangeIcon():
@@ -98,8 +98,15 @@ def ChangeIcon():
         user = User()
         res = user.UpdateIcon(iden,icon)
         return res
+
+@app.route('/userById/<ident>',methods=['GET'])
+def UserById(ident):
+    user = User()
+    data = user.GetUserByID(escape(ident))
+    print(data, escape(ident))
+    return data
 @app.route('/user' ,methods=['GET','PUT'])
-@app.route('/user/<ident>',methods=['DELETE'])
+@app.route('/user/<ident>',methods=['DELETE','GET'])
 @jwt_required
 def user(ident=''):
     current_user = get_jwt_identity()
@@ -107,9 +114,9 @@ def user(ident=''):
         return jsonify({"msg": "Missing token"}), 400
     #GET
     elif request.method == 'GET':
-        user = User()
-        res = user.getAll()
-        return res
+            user = User()
+            res = user.getAll()
+            return res
     #PUT
     elif request.method == 'PUT':
         name = request.json['name']
@@ -130,10 +137,17 @@ def user(ident=''):
     elif request.method == 'DELETE':
         user = User()
         res = user.Delete(escape(ident))
-        return res
+        return jsonify(res)
     else:
         return jsonify({"error":"Method Not Found"}), 404
-        
+
+@app.route('/username')
+def username():
+    user = User()
+    res = user.getUsernames()
+    print(res)
+    return res , 200
+
 #LOGIN
 @app.route('/login' ,methods=['POST'])
 def login():
@@ -186,7 +200,7 @@ def Upload():
         control = False
         count = 0
         arr = []
-        #try:
+    #try:
         while(control == False):
             print(count)
             f = request.files['file'+str(count)]
@@ -197,19 +211,15 @@ def Upload():
             elif '.jpeg' in f.filename:
                     ext = '.jpeg'
             elif '.mp3' in f.filename:
-                    ext = '.mp3'  
-            #if request.form['filename']:
-                    #filename = request.form['filename']
-                    #f.save('./public/files/' + filename + ext)
-                    
-                    #return jsonify({"msg":"Ok"},200)
-            #else:
+                    ext = '.mp3' 
+            elif '.mp4' in f.filename:
+                    ext = '.mp4' 
             filename = str(count)+str(autor)+str(postname)
             if os.path.exists('public/files/'+filename):
                 return jsonify({"msg":"El archivo ya existe"}),400
             
             count = count+1   
-            if tipo == 'Dibujo/fotografía':
+            if tipo == 'Dibujo-fotografia':
                 if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
                     f.save('./public/files/' + filename)
                     arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
@@ -221,16 +231,31 @@ def Upload():
                 else:
                     f.save('./public/files/' + filename)
                     arr.append({'title':f.filename,'link':'http://127.0.0.1:5000/download/'+filename})
+            elif tipo == 'Video':
+                if ext != '.mp4':
+                    pass
+                else:
+                    f.save('./public/files/' + filename)
+                    arr.append({'title':f.filename,'link':'http://127.0.0.1:5000/download/'+filename})
             if('file'+str(count) in request.files):
                 control = False
             else:
                 control = True
-        #except:
-         #   e = sys.exc_info()[0]
-          #  print( "Error: %s" % e )
-           # return 'https://davidlanau.com/wp-content/uploads/redirigir-errores-404-home-wordpress.png'
+    #except:
+    #       e = sys.exc_info()[0]
+    #       print( "Error: %s" % e )
+    #       return jsonify({"msg":"Archivo demasiado pesado"})
     return jsonify(arr)
-    
+@app.route('/UploadUserImg',methods=['POST'])
+def UploadUserImg():
+    fil = request.files['file']
+    filename = request.form['filename']
+    print('archivo: ',filename)
+    if os.path.exists('public/files/'+filename):
+        os.remove('public/files/'+filename)
+    fil.save('./public/files/' + filename)
+    return jsonify({"msg":"Uploaded"}),200
+
 @app.route('/download/<name>',methods=['GET'])
 def download(name):
     if request.method == 'GET':
@@ -243,8 +268,12 @@ def delete():
     try:
         itmarr = request.json['files']
         for itm in itmarr:
-            name = str(itm['big']).replace('http://127.0.0.1:5000/download/','')
-            print(name)
+            if 'big' in itm:
+                name = str(itm['big']).replace('http://127.0.0.1:5000/download/','')
+                print(name)
+            elif 'link' in itm:
+                name = str(itm['link']).replace('http://127.0.0.1:5000/download/','')
+                print(name)
             if os.path.exists('public/files/'+name):
                 os.remove('public/files/'+escape(name))
     except:
@@ -254,7 +283,6 @@ def delete():
     return jsonify({"msg":"All files deleted"}),200
 
 @app.route('/userportfolio/<_id>',methods=['GET'])
-@jwt_required
 def UserPortfolioID(_id):
     port = Portfolio()
     return port.GetByUserId(escape(_id))
@@ -276,22 +304,41 @@ def portfolio(iden=''):
             file=ast.literal_eval(request.form['file']),
             text=request.form['text'],
             author=request.form['author'],
+            authorname=request.form['authorname'],
             category=request.form['category'],
             totalpoints=0,
             totalcoments=0,
-            tags = list(str(request.form['tags']).split(',')))
-        print(str(request.form['tags']).split(','))
+            tags = list(str(request.form['tags']).lower().split(',')))
+        #print(str(request.form['tags']).split(','))
         return port.Post()
     elif request.method == 'PUT':
         iden = request.json['_id']
         return port.Update(iden['$oid'],request.json['archivo'],request.json['titulo'],
-        request.json['texto'],request.json['autor'],request.json['coments'],
+        request.json['texto'],request.json['autor'],request.json['authorname'],request.json['coments'],
         request.json['points'],request.json['category'],request.json['tags'])
     elif request.method == 'DELETE':
 
         return port.Delete(escape(iden))
     return jsonify({"msg":"Route Not Found"},400)
 
+@app.route('/search',methods=['POST'])
+def search():
+    args = str(request.json['args']).lower()
+    filt = request.json['filt']
+    port = Portfolio()
+    return port.Search(args,filt)
+
+@app.route('/mostvalored',methods=['GET'])
+def GetMostValored():
+    port = Portfolio()
+    res = port.MejorValorados()
+    return res
+
+@app.route('/category/<cat>',methods=['GET'])
+def GetByCategory(cat):
+    port = Portfolio()
+    res = port.GetByCategory(str(escape(cat)))
+    return res
 #Run app
 @app.after_request
 def after_request(response):
