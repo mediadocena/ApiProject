@@ -230,7 +230,7 @@ def Upload():
                     pass
                 else:
                     f.save('./public/files/' + filename)
-                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/'+filename})
+                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
             elif tipo == 'Video':
                 if ext != '.mp4':
                     pass
