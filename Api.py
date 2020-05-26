@@ -73,7 +73,7 @@ def sendMail(mai,username,password):
     msg = Message(subject="Confirmación de cuenta",
                         sender='proyectofinalmail@gmail.com',
                         recipients = [mai])
-    link = 'http://localhost:4200/verify/'+_id
+    link = 'https://flaskproyectofinal.herokuapp.com/verify/'+_id
     msg.body = f'Gracias por registrarte en la página, para completar tu cuenta,pincha en el enlace: {link}'
     mail.send(msg)
     return '200'
@@ -222,7 +222,7 @@ def Upload():
             if tipo == 'Dibujo-fotografia':
                 if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
                     f.save('./public/files/' + filename)
-                    arr.append({'medium':'http://127.0.0.1:5000/download/'+filename,'big':'http://127.0.0.1:5000/download/'+filename})
+                    arr.append({'medium':'https://flaskproyectofinal.herokuapp.com/download/'+filename,'big':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
                 else:
                     pass
             elif tipo == 'Música':
@@ -230,13 +230,13 @@ def Upload():
                     pass
                 else:
                     f.save('./public/files/' + filename)
-                    arr.append({'title':f.filename,'link':'http://127.0.0.1:5000/download/'+filename})
+                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/'+filename})
             elif tipo == 'Video':
                 if ext != '.mp4':
                     pass
                 else:
                     f.save('./public/files/' + filename)
-                    arr.append({'title':f.filename,'link':'http://127.0.0.1:5000/download/'+filename})
+                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
             if('file'+str(count) in request.files):
                 control = False
             else:
@@ -269,10 +269,10 @@ def delete():
         itmarr = request.json['files']
         for itm in itmarr:
             if 'big' in itm:
-                name = str(itm['big']).replace('http://127.0.0.1:5000/download/','')
+                name = str(itm['big']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
                 print(name)
             elif 'link' in itm:
-                name = str(itm['link']).replace('http://127.0.0.1:5000/download/','')
+                name = str(itm['link']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
                 print(name)
             if os.path.exists('public/files/'+name):
                 os.remove('public/files/'+escape(name))
