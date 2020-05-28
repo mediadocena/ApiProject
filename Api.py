@@ -347,6 +347,13 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
-
+def dyno(self):
+    while True:
+        print("esperando...")
+        if datetime.datetime.now().minute % 5 == 0: 
+            a = requests.get("https://flaskproyectofinal.herokuapp.com/Main")
+            print(a)
+            time.sleep(60)
+            
 if __name__ == '__main__':
     app.run()
