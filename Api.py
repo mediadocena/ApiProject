@@ -262,6 +262,7 @@ def UploadUserImg():
     return jsonify({"msg":"Uploaded"}),200
   
 @app.route('/changeIconBase64',methods=['PUT'])
+@cross_origin()
 @jwt_required
 def changeBase64():
     img_data = request.json['file']
