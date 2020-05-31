@@ -9,14 +9,17 @@ from ast import literal_eval
 from flask_mail import *
 from models.Portfolio import Portfolio
 from flask_compress import Compress
+from flask_cors import CORS, cross_origin
 import os
 import sys
 import ast
 import base64
 compress = Compress()
 app = Flask(__name__)
+cors = CORS(app)
 compress.init_app(app)
 hashing = Hashing(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 defaults = ['text/html', 'text/css', 'text/xml', 'application/json',
                     'application/javascript','image/png','image/jpg','video/mp4','audio/mp3']
 app.config.update(
@@ -248,6 +251,7 @@ def Upload():
     #       return jsonify({"msg":"Archivo demasiado pesado"})
     return jsonify(arr)
 @app.route('/UploadUserImg',methods=['POST'])
+@cross_origin()
 def UploadUserImg():
     fil = request.files['file']
     filename = request.form['filename']
@@ -260,19 +264,16 @@ def UploadUserImg():
 @app.route('/changeIconBase64',methods=['PUT'])
 @jwt_required
 def changeBase64():
-    data = request.json()
-    if data is None:
-        return jsonify({'error': 'No json'})
-    else:
-        img_data = data['file']
-        img_name = data['filename']
-        if os.path.exists('public/files/'+img_name):
-            os.remove('public/files/'+img_name)
-        with open("public/files/"+img_name, "wb") as fh:
-            fh.write(base64.decodebytes(img_data.encode()))
-        url = 'https://flaskproyectofinal.herokuapp.com/download/'+img_name
-        user = User()
-        res = user.UpdateIcon(img_name,url)
+    img_data = request.json['file']
+    img_name = request.json['filename']
+    img_data = str(img_data)+"=="
+    if os.path.exists('public/files/'+img_name):
+        os.remove('public/files/'+img_name)
+    with open("public/files/"+img_name, "wb") as fh:
+        fh.write(base64.decodebytes(img_data.encode()))
+    url = 'https://flaskproyectofinal.herokuapp.com/download/'+img_name
+    user = User()
+    res = user.UpdateIcon(img_name,url)
     return jsonify({"msg":"OK"}), 200
 
 @app.route('/download/<name>',methods=['GET'])
