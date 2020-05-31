@@ -12,6 +12,7 @@ from flask_compress import Compress
 import os
 import sys
 import ast
+import base64
 compress = Compress()
 app = Flask(__name__)
 compress.init_app(app)
@@ -255,6 +256,24 @@ def UploadUserImg():
         os.remove('public/files/'+filename)
     fil.save('./public/files/' + filename)
     return jsonify({"msg":"Uploaded"}),200
+  
+@app.route('/changeIconBase64',methods=['PUT'])
+@jwt_required
+def changeBase64():
+    data = request.json()
+    if data is None:
+        return jsonify({'error': 'No json'})
+    else:
+        img_data = data['file']
+        img_name = data['filename']
+        if os.path.exists('public/files/'+img_name):
+            os.remove('public/files/'+img_name)
+        with open("public/files/"+img_name, "wb") as fh:
+            fh.write(base64.decodebytes(img_data.encode()))
+        url = 'https://flaskproyectofinal.herokuapp.com/download/'+img_name
+        user = User()
+        res = user.UpdateIcon(img_name,url)
+    return jsonify({"msg":"OK"}), 200
 
 @app.route('/download/<name>',methods=['GET'])
 def download(name):
