@@ -49,3 +49,4 @@ Werkzeug==0.16.0
 whitenoise==5.1.0
 wrapt==1.11.2
 Flask-Cors==3.0.8
+Pyrebase4==4.3.0

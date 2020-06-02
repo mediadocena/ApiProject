@@ -14,9 +14,20 @@ import os
 import sys
 import ast
 import base64
+import requests
+import pyrebase
 compress = Compress()
 app = Flask(__name__)
 cors = CORS(app)
+config = {
+  "apiKey": "AIzaSyBvxZRopdSlO13kHt5RMXFYqP5FxiYPyFc",
+  "authDomain": "mediawolf-api-python.firebaseapp.com",
+  "databaseURL": "https://mediawolf-api-python.firebaseio.com",
+  "storageBucket": "mediawolf-api-python.appspot.com",
+  "serviceAccount": "./mediawolf-api-python-firebase-adminsdk-dp05l-2481fab1fb.json"
+}
+
+firebase = pyrebase.initialize_app(config)
 compress.init_app(app)
 hashing = Hashing(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -193,9 +204,11 @@ def login():
             ), 200
 
 @app.route('/upload', methods=['POST'])
+@cross_origin()
 def Upload():
     #CONTROLAR QUE EL NOMBRE DEL ARCHIVO EXISTA O NO
     if request.method == 'POST':
+        storage = firebase.storage()
         f = ''
         autor = request.form['Autor']
         postname = request.form['PostName']
@@ -226,7 +239,8 @@ def Upload():
             if tipo == 'Dibujo-fotografia':
                 if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
                     f.save('./public/files/' + filename)
-                    arr.append({'medium':'https://flaskproyectofinal.herokuapp.com/download/'+filename,'big':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
+                    storage.child("images/"+filename).put('./public/files/'+filename)
+                    arr.append({'title':filename,'medium':storage.child('images/'+filename).get_url(''),'big':storage.child('images/'+filename).get_url(''),'tipo':'img'})               
                 else:
                     pass
             elif tipo == 'Música':
@@ -234,13 +248,15 @@ def Upload():
                     pass
                 else:
                     f.save('./public/files/' + filename)
-                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
+                    storage.child("audio/"+filename).put('./public/files/'+filename)
+                    arr.append({'title':filename,'link':storage.child('audio/'+filename).get_url(''),'tipo':'audio'})
             elif tipo == 'Video':
                 if ext != '.mp4':
                     pass
                 else:
                     f.save('./public/files/' + filename)
-                    arr.append({'title':f.filename,'link':'https://flaskproyectofinal.herokuapp.com/download/'+filename})
+                    storage.child("video/"+filename).put('./public/files/'+filename)
+                    arr.append({'title':filename,'link':storage.child('video/'+filename).get_url(''),'tipo':'video'})
             if('file'+str(count) in request.files):
                 control = False
             else:
@@ -250,15 +266,18 @@ def Upload():
     #       print( "Error: %s" % e )
     #       return jsonify({"msg":"Archivo demasiado pesado"})
     return jsonify(arr)
+
 @app.route('/UploadUserImg',methods=['POST'])
 @cross_origin()
 def UploadUserImg():
+    storage = firebase.storage()
     fil = request.files['file']
     filename = request.form['filename']
     print('archivo: ',filename)
     if os.path.exists('public/files/'+filename):
         os.remove('public/files/'+filename)
     fil.save('./public/files/' + filename)
+    storage.child("user/"+filename).put('./public/files/'+filename)
     return jsonify({"msg":"Uploaded"}),200
   
 @app.route('/changeIconBase64',methods=['PUT'])
@@ -286,22 +305,29 @@ def download(name):
 @app.route('/delete',methods=['PUT'])
 @jwt_required
 def delete():
-    try:
+    #try:
+        storage = firebase.storage()
         itmarr = request.json['files']
         for itm in itmarr:
-            if 'big' in itm:
-                name = str(itm['big']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
-                print(name)
-            elif 'link' in itm:
-                name = str(itm['link']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
-                print(name)
-            if os.path.exists('public/files/'+name):
-                os.remove('public/files/'+escape(name))
-    except:
-        e = sys.exc_info()
-        print( "Error: %s" % e )
-        return '500'
-    return jsonify({"msg":"All files deleted"}),200
+            if itm['tipo'] == 'audio':
+                storage.child().delete('audio/'+itm['title'])
+            if itm['tipo'] == 'video':
+                storage.child().delete('video/'+itm['title'])
+            if itm['tipo'] == 'img':
+                storage.child().delete('images/'+itm['title'])
+        #if 'big' in itm:
+            #   name = str(itm['big']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
+            #   print(name)
+            #elif 'link' in itm:
+            #    name = str(itm['link']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
+            #   print(name)
+            #if os.path.exists('public/files/'+name):
+             #   os.remove('public/files/'+escape(name))
+    #except:
+       # e = sys.exc_info()
+        #print( "Error: %s" % e )
+        #return '500'
+        return jsonify({"msg":"All files deleted"}),200
 
 @app.route('/userportfolio/<_id>',methods=['GET'])
 def UserPortfolioID(_id):
