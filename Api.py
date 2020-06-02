@@ -278,7 +278,7 @@ def UploadUserImg():
         os.remove('public/files/'+filename)
     fil.save('./public/files/' + filename)
     storage.child("user/"+filename).put('./public/files/'+filename)
-    return jsonify({"msg":"Uploaded"}),200
+    return jsonify({"url":storage.child('user/'+filename).get_url('')})
   
 @app.route('/changeIconBase64',methods=['PUT'])
 @cross_origin()
