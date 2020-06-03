@@ -240,7 +240,7 @@ def Upload():
                 if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
                     f.save('./public/files/' + filename)
                     storage.child("images/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':filename,'medium':storage.child('images/'+filename).get_url(''),'big':storage.child('images/'+filename).get_url(''),'tipo':'img'})               
+                    arr.append({'title':f.filename,'medium':storage.child('images/'+filename).get_url(''),'big':storage.child('images/'+filename).get_url(''),'tipo':'img'})               
                 else:
                     pass
             elif tipo == 'Música':
@@ -249,14 +249,14 @@ def Upload():
                 else:
                     f.save('./public/files/' + filename)
                     storage.child("audio/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':filename,'link':storage.child('audio/'+filename).get_url(''),'tipo':'audio'})
+                    arr.append({'title':f.filename,'link':storage.child('audio/'+filename).get_url(''),'tipo':'audio'})
             elif tipo == 'Video':
                 if ext != '.mp4':
                     pass
                 else:
                     f.save('./public/files/' + filename)
                     storage.child("video/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':filename,'link':storage.child('video/'+filename).get_url(''),'tipo':'video'})
+                    arr.append({'title':f.filename,'link':storage.child('video/'+filename).get_url(''),'tipo':'video'})
             if('file'+str(count) in request.files):
                 control = False
             else:
