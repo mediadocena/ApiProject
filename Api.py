@@ -284,6 +284,7 @@ def UploadUserImg():
 @cross_origin()
 @jwt_required
 def changeBase64():
+    storage = firebase.storage()
     img_data = request.json['file']
     img_name = request.json['filename']
     img_data = str(img_data)+"=="
@@ -291,7 +292,8 @@ def changeBase64():
         os.remove('public/files/'+img_name)
     with open("public/files/"+img_name, "wb") as fh:
         fh.write(base64.decodebytes(img_data.encode()))
-    url = 'https://flaskproyectofinal.herokuapp.com/download/'+img_name
+    storage.child("user/"+img_name).put('./public/files/'+img_name)
+    url= storage.child('user/'+img_name).get_url('')
     user = User()
     res = user.UpdateIcon(img_name,url)
     return jsonify({"msg":"OK"}), 200
