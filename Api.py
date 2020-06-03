@@ -240,7 +240,7 @@ def Upload():
                 if ext == '.png' or ext == '.jpg' or ext == '.jpeg':
                     f.save('./public/files/' + filename)
                     storage.child("images/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':f.filename,'medium':storage.child('images/'+filename).get_url(''),'big':storage.child('images/'+filename).get_url(''),'tipo':'img'})               
+                    arr.append({'title':f.filename,'medium':storage.child('images/'+filename).get_url(''),'big':storage.child('images/'+filename).get_url(''),'tipo':'img','srcdel':filename})               
                 else:
                     pass
             elif tipo == 'Música':
@@ -249,14 +249,14 @@ def Upload():
                 else:
                     f.save('./public/files/' + filename)
                     storage.child("audio/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':f.filename,'link':storage.child('audio/'+filename).get_url(''),'tipo':'audio'})
+                    arr.append({'title':f.filename,'link':storage.child('audio/'+filename).get_url(''),'tipo':'audio','srcdel':filename})
             elif tipo == 'Video':
                 if ext != '.mp4':
                     pass
                 else:
                     f.save('./public/files/' + filename)
                     storage.child("video/"+filename).put('./public/files/'+filename)
-                    arr.append({'title':f.filename,'link':storage.child('video/'+filename).get_url(''),'tipo':'video'})
+                    arr.append({'title':f.filename,'link':storage.child('video/'+filename).get_url(''),'tipo':'video','srcdel':filename})
             if('file'+str(count) in request.files):
                 control = False
             else:
@@ -312,11 +312,11 @@ def delete():
         itmarr = request.json['files']
         for itm in itmarr:
             if itm['tipo'] == 'audio':
-                storage.child().delete('audio/'+itm['title'])
+                storage.child().delete('audio/'+itm['srcdel'])
             if itm['tipo'] == 'video':
-                storage.child().delete('video/'+itm['title'])
+                storage.child().delete('video/'+itm['srcdel'])
             if itm['tipo'] == 'img':
-                storage.child().delete('images/'+itm['title'])
+                storage.child().delete('images/'+itm['srcdel'])
         #if 'big' in itm:
             #   name = str(itm['big']).replace('https://flaskproyectofinal.herokuapp.com/download/','')
             #   print(name)
