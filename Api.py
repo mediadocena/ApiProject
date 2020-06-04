@@ -99,7 +99,7 @@ def postuser():
         sendmail = False
         password = hashing.hash_value(request.json['password'], salt='abcd')
         user = User(request.json['username'],password,mai,request.json['rol'],icon=request.json['icono'])
-        if user.existsMail(mai) == False and user.existsUsername == False:
+        if user.existsMail(mai) == False and user.existsUsername(request.json['username']) == False:
             user.saveToDB() 
             return sendMail(mai,request.json['username'],password)
         else:
