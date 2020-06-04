@@ -88,7 +88,7 @@ def sendMail(mai,username,password):
     msg = Message(subject="Confirmación de cuenta",
                         sender='proyectofinalmail@gmail.com',
                         recipients = [mai])
-    link = 'https://flaskproyectofinal.herokuapp.com/verify/'+_id
+    link = 'https://angularproyectofinal.herokuapp.com/verify/'+_id
     msg.body = f'Gracias por registrarte en la página, para completar tu cuenta,pincha en el enlace: {link}'
     mail.send(msg)
     return '200'
