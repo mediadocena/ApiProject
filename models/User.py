@@ -134,6 +134,8 @@ class User:
             e = sys.exc_info()[0]
             print( "Error: %s" % e )
             return '500'
+
+            
     def Confirm(self,_id):
             try:
                 self.conn.update_one({'_id':ObjectId(_id)},{"$set": {'verified':'true'}})

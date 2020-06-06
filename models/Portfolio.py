@@ -75,6 +75,11 @@ class Portfolio():
             return '500'
         return '200' 
 
+    def UpdateUsername(self,newname,oldname):
+        self.conn.update_many({'authorname':oldname},{'$set':{'authorname':newname,'authorname_lower':newname.lower()}})
+
+        return 200
+
     def GetById(self,iden):
         try:
             res = self.conn.find_one({'_id':ObjectId(iden)})

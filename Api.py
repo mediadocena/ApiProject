@@ -163,6 +163,15 @@ def username():
     print(res)
     return res , 200
 
+@app.route('/updatePostAuthor',methods=['PUT'])
+def updatePostAuthor():
+    port = Portfolio()
+    newname = request.json['newname']
+    oldname = request.json['oldname']
+
+    port.UpdateUsername(newname,oldname)
+    return jsonify({'msg':'OK'})
+
 #LOGIN
 @app.route('/login' ,methods=['POST'])
 def login():
