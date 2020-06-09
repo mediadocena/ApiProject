@@ -170,6 +170,8 @@ def updatePostAuthor():
     oldname = request.json['oldname']
 
     port.UpdateUsername(newname,oldname)
+    port.UpdateComentAuthor(newname,oldname)
+    
     return jsonify({'msg':'OK'})
 
 #LOGIN

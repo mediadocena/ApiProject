@@ -79,7 +79,15 @@ class Portfolio():
         self.conn.update_many({'authorname':oldname},{'$set':{'authorname':newname,'authorname_lower':newname.lower()}})
 
         return 200
-
+    def UpdateComentAuthor(self,newname,oldname):
+        control = False
+        count = 0
+        while control == False:
+            x = self.conn.update_many({'coments.'+str(count)+'.name':oldname},{'$set':{'coments.'+str(count)+'.name':newname}})
+            if x == None:
+                control = True
+            count = count + 1
+        return 200
     def GetById(self,iden):
         try:
             res = self.conn.find_one({'_id':ObjectId(iden)})
